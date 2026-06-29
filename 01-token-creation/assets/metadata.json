@@ -1,0 +1,24 @@
+{
+  "name": "Traveling Panda",
+  "description": "A world traveling panda.",
+  "image": "ipfs://",
+  "attributes": [
+    {
+      "trait_type": "Hat",
+      "value": "Straw"
+    },
+    {
+      "trait_type": "Location",
+      "value": "Asia"
+    },
+    {
+      "trait_type": "Item1",
+      "value": "Map"
+    },
+    {
+      "trait_type": "Item2",
+      "value": 15,
+      "display_type": "Suitcase"
+    }
+  ]
+}
