@@ -56,6 +56,25 @@ contract VotingSystem {
         uint maxVotes = 0;
         uint leadingCandidateId = 0;
 
+        for (uint8 i = 1; i <= candidatesCount; i++) {
+            if (candidates[i].voteCount > maxVotes) {
+                maxVotes = candidates[i].voteCount;
+                leadingCandidateId = i;
+            }
+        }
+
+        if (leadingCandidateId == 0) {
+            return "No votes cast yet";
+        }
+        return candidates[leadingCandidateId].name; 
+    }
+
+    function getWinner() public view returns (string memory) {
+        require(block.timestamp > endTime, "Voting is still ongoing, results will be available after voting ends.");
+        
+        uint maxVotes = 0;
+        uint leadingCandidateId = 0;
+
         for (uint i = 1; i <= candidatesCount; i++) {
             if (candidates[i].voteCount > maxVotes) {
                 maxVotes = candidates[i].voteCount;
@@ -67,6 +86,6 @@ contract VotingSystem {
             return "No votes cast yet";
         }
 
-        return candidates[leadingCandidateId].name;
+        return candidates[leadingCandidateId].name; 
     }
 }
