@@ -1,1 +1,146 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insurance Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="interface.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <p class="brand-name">Insurance Protocol</p>
+          <p class="brand-sub">On-chain policy, premium &amp; claims</p>
+        </div>
+      </div>
+      <div class="wallet-panel">
+        <p id="networkLabel" class="meta">No network</p>
+        <button type="button" id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+      </div>
+    </header>
+
+    <section class="setup">
+      <label for="contractAddress">Deployed contract address</label>
+      <div class="row">
+        <input id="contractAddress" type="text" placeholder="0x..." autocomplete="off" spellcheck="false" />
+        <button type="button" id="loadContractBtn" class="btn btn-secondary">Load Contract</button>
+      </div>
+      <p id="setupStatus" class="status" role="status"></p>
+    </section>
+
+    <section class="stats" aria-label="Contract overview">
+      <article>
+        <h2>Connected</h2>
+        <p id="accountDisplay" class="mono">—</p>
+      </article>
+      <article>
+        <h2>Insurer</h2>
+        <p id="insurerDisplay" class="mono">—</p>
+      </article>
+      <article>
+        <h2>Policies</h2>
+        <p id="policyCountDisplay">—</p>
+      </article>
+      <article>
+        <h2>Contract Balance</h2>
+        <p id="balanceDisplay">—</p>
+      </article>
+      <article>
+        <h2>Your Role</h2>
+        <p id="roleDisplay">—</p>
+      </article>
+    </section>
+
+    <main class="grid">
+      <section class="panel" data-role="insurer">
+        <h2>Create Policy</h2>
+        <p class="hint">Only the insurer can create policies.</p>
+        <form id="createPolicyForm">
+          <label for="policyHolder">Policy holder address</label>
+          <input id="policyHolder" type="text" placeholder="0x..." required spellcheck="false" />
+          <label for="premium">Premium (ETH)</label>
+          <input id="premium" type="number" min="0" step="any" placeholder="0.01" required />
+          <label for="coverageAmount">Coverage amount (ETH)</label>
+          <input id="coverageAmount" type="number" min="0" step="any" placeholder="1.0" required />
+          <button type="submit" class="btn btn-primary">Create Policy</button>
+        </form>
+      </section>
+
+      <section class="panel" data-role="holder">
+        <h2>Pay Premium</h2>
+        <p class="hint">Send the exact premium from the policy holder wallet.</p>
+        <form id="payPremiumForm">
+          <label for="payPolicyId">Policy ID</label>
+          <input id="payPolicyId" type="number" min="1" step="1" placeholder="1" required />
+          <button type="submit" class="btn btn-primary">Pay Premium</button>
+        </form>
+      </section>
+
+      <section class="panel" data-role="holder">
+        <h2>Submit Claim</h2>
+        <p class="hint">Premium must already be paid.</p>
+        <form id="submitClaimForm">
+          <label for="claimPolicyId">Policy ID</label>
+          <input id="claimPolicyId" type="number" min="1" step="1" placeholder="1" required />
+          <button type="submit" class="btn btn-primary">Submit Claim</button>
+        </form>
+      </section>
+
+      <section class="panel" data-role="insurer">
+        <h2>Approve Claim</h2>
+        <p class="hint">Only the insurer can approve a submitted claim.</p>
+        <form id="approveClaimForm">
+          <label for="approvePolicyId">Policy ID</label>
+          <input id="approvePolicyId" type="number" min="1" step="1" placeholder="1" required />
+          <button type="submit" class="btn btn-primary">Approve Claim</button>
+        </form>
+      </section>
+
+      <section class="panel" data-role="holder">
+        <h2>Claim Payout</h2>
+        <p class="hint">Withdraw coverage after approval.</p>
+        <form id="claimPayoutForm">
+          <label for="payoutPolicyId">Policy ID</label>
+          <input id="payoutPolicyId" type="number" min="1" step="1" placeholder="1" required />
+          <button type="submit" class="btn btn-primary">Claim Payout</button>
+        </form>
+      </section>
+
+      <section class="panel panel-wide">
+        <h2>Policy Details</h2>
+        <p class="hint">Look up any policy by ID.</p>
+        <form id="lookupForm" class="lookup-row">
+          <label for="lookupPolicyId">Policy ID</label>
+          <div class="row">
+            <input id="lookupPolicyId" type="number" min="1" step="1" placeholder="1" required />
+            <button type="submit" class="btn btn-secondary">View Details</button>
+            <button type="button" id="refreshBtn" class="btn btn-ghost">Refresh Overview</button>
+          </div>
+        </form>
+        <div id="policyDetails" class="details" hidden>
+          <dl>
+            <div><dt>Policy Holder</dt><dd id="dHolder" class="mono"></dd></div>
+            <div><dt>Premium</dt><dd id="dPremium"></dd></div>
+            <div><dt>Coverage</dt><dd id="dCoverage"></dd></div>
+            <div><dt>Premium Paid</dt><dd id="dPremiumPaid"></dd></div>
+            <div><dt>Claim Submitted</dt><dd id="dClaimed"></dd></div>
+            <div><dt>Claim Approved</dt><dd id="dApproved"></dd></div>
+            <div><dt>Payout Done</dt><dd id="dPayout"></dd></div>
+          </dl>
+        </div>
+      </section>
+    </main>
+
+    <p id="txStatus" class="status status-banner" role="status"></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
