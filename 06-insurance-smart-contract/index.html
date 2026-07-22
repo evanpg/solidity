@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Insurance Protocol</title>
+  <title>Insurance Smart Contract</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="interface.css" />
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
 </head>
 <body>
   <div class="page">
@@ -20,9 +20,12 @@
           <p class="brand-sub">On-chain policy, premium &amp; claims</p>
         </div>
       </div>
-      <div class="wallet-panel">
+
+
+<!-- CONNECT TO METAMASK-->
+      <div class="section">
         <p id="networkLabel" class="meta">No network</p>
-        <button type="button" id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+        <button onclick="connectMetaMask()">Connect to MetaMask</button>
       </div>
     </header>
 
@@ -33,7 +36,7 @@
         <button type="button" id="loadContractBtn" class="btn btn-secondary">Load Contract</button>
       </div>
       <p id="setupStatus" class="status" role="status"></p>
-    </section>
+    </section> -->
 
     <section class="stats" aria-label="Contract overview">
       <article>
@@ -58,8 +61,10 @@
       </article>
     </section>
 
+
+<!-- CREATE POLICY-->
     <main class="grid">
-      <section class="panel" data-role="insurer">
+      <div class="panel">
         <h2>Create Policy</h2>
         <p class="hint">Only the insurer can create policies.</p>
         <form id="createPolicyForm">
@@ -68,79 +73,68 @@
           <label for="premium">Premium (ETH)</label>
           <input id="premium" type="number" min="0" step="any" placeholder="0.01" required />
           <label for="coverageAmount">Coverage amount (ETH)</label>
-          <input id="coverageAmount" type="number" min="0" step="any" placeholder="1.0" required />
-          <button type="submit" class="btn btn-primary">Create Policy</button>
+          <input id="coverage" type="number" min="0" step="any" placeholder="1.0" required />
+          <button onclick="createPolicy()">Create Policy</button>
         </form>
       </section>
 
+<!-- PAY PREMIUM -->
       <section class="panel" data-role="holder">
         <h2>Pay Premium</h2>
         <p class="hint">Send the exact premium from the policy holder wallet.</p>
         <form id="payPremiumForm">
           <label for="payPolicyId">Policy ID</label>
           <input id="payPolicyId" type="number" min="1" step="1" placeholder="1" required />
-          <button type="submit" class="btn btn-primary">Pay Premium</button>
+          <button onclick="payPremium()">Pay Premium</button>
         </form>
       </section>
-
+      
+<!-- SUBMIT CLAIM -->
       <section class="panel" data-role="holder">
         <h2>Submit Claim</h2>
         <p class="hint">Premium must already be paid.</p>
         <form id="submitClaimForm">
-          <label for="claimPolicyId">Policy ID</label>
-          <input id="claimPolicyId" type="number" min="1" step="1" placeholder="1" required />
-          <button type="submit" class="btn btn-primary">Submit Claim</button>
+          <label for="policyIdClaim">Policy ID</label>
+          <input id="policyIdClaim" type="number" min="1" step="1" placeholder="1" required />
+          <button onclick="submitClaim()">Submit Claim</button>
         </form>
       </section>
 
+<!-- APPROVE CLAIM -->
       <section class="panel" data-role="insurer">
         <h2>Approve Claim</h2>
         <p class="hint">Only the insurer can approve a submitted claim.</p>
         <form id="approveClaimForm">
           <label for="approvePolicyId">Policy ID</label>
           <input id="approvePolicyId" type="number" min="1" step="1" placeholder="1" required />
-          <button type="submit" class="btn btn-primary">Approve Claim</button>
+          <button onclick="approveClaim()">Approve Claim</button>
         </form>
       </section>
 
+<!-- CLAIM PAYOUT -->
       <section class="panel" data-role="holder">
         <h2>Claim Payout</h2>
         <p class="hint">Withdraw coverage after approval.</p>
         <form id="claimPayoutForm">
           <label for="payoutPolicyId">Policy ID</label>
           <input id="payoutPolicyId" type="number" min="1" step="1" placeholder="1" required />
-          <button type="submit" class="btn btn-primary">Claim Payout</button>
+          <button onclick="claimPayout()">Claim Payout</button>
         </form>
       </section>
 
-      <section class="panel panel-wide">
-        <h2>Policy Details</h2>
-        <p class="hint">Look up any policy by ID.</p>
-        <form id="lookupForm" class="lookup-row">
-          <label for="lookupPolicyId">Policy ID</label>
-          <div class="row">
-            <input id="lookupPolicyId" type="number" min="1" step="1" placeholder="1" required />
-            <button type="submit" class="btn btn-secondary">View Details</button>
-            <button type="button" id="refreshBtn" class="btn btn-ghost">Refresh Overview</button>
-          </div>
-        </form>
-        <div id="policyDetails" class="details" hidden>
-          <dl>
-            <div><dt>Policy Holder</dt><dd id="dHolder" class="mono"></dd></div>
-            <div><dt>Premium</dt><dd id="dPremium"></dd></div>
-            <div><dt>Coverage</dt><dd id="dCoverage"></dd></div>
-            <div><dt>Premium Paid</dt><dd id="dPremiumPaid"></dd></div>
-            <div><dt>Claim Submitted</dt><dd id="dClaimed"></dd></div>
-            <div><dt>Claim Approved</dt><dd id="dApproved"></dd></div>
-            <div><dt>Payout Done</dt><dd id="dPayout"></dd></div>
-          </dl>
-        </div>
-      </section>
+<!-- POLICY DETAILS -->
+      <div id="getPolicyDetails">
+        <h2>Get Policy Details</h2>
+        <input type="number" id="policyDetailsInput" placeholder="Policy ID">
+        <button onclick="getPolicyDetails()">Get Details</button>
+        <div id="policyDetails="></div>
+      </div>
     </main>
 
     <p id="txStatus" class="status status-banner" role="status"></p>
   </div>
 
   <script src="app.js"></script>
+  
 </body>
 </html>
