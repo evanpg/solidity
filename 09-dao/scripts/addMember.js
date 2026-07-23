@@ -1,3 +1,5 @@
+// this runs with `npx hardhat run ./scripts/addMember.js --network amoy`
+
 const { ethers } = require("hardhat");
 
 async function main() {

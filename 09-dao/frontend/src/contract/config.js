@@ -1,0 +1,2 @@
+export const DAO_ADDRESS =
+  "0xf0603CDbd1F376e6e91c94BC9732cd2178230cD9";
