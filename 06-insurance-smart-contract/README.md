@@ -1,57 +1,53 @@
-# Sample Hardhat 3 Project (`mocha` and `ethers`)
-
-This project showcases a Hardhat 3 project using `mocha` for tests and the `ethers` library for Ethereum interactions.
-
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
-
-## Project Overview
-
-This example project includes:
-
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+Images of interface and onchain transactions are in ./screenshots.
+Deployed contract found here: https://sepolia.etherscan.io/address/0xf0603cdbd1f376e6e91c94bc9732cd2178230cd9
 
 ## Usage
-
 ### Running Tests
-
-To run all the tests in the project, execute the following command:
-
 ```shell
 npx hardhat test
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
-
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
+prep:
+ ```shell
+npm install --save-dev @nomicfoundation/hardhat-ethers ethers
+npm install dotenv
+npm install vite --save-dev
 ```
 
-### Make a deployment to Sepolia
+change hardhat.config.ts variables to include dotenv, otherwise it wont read global variables.
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+### Make a deployment 
+V3 includes an Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
 
 To run the deployment to a local chain:
-
 ```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+npx hardhat node
+npx hardhat ignition deploy ignition/modules/insurance.js
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+To run the deployment to Sepolia, you need an account with funds to send the transaction.
 
 ```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+npx hardhat ignition deploy --network sepolia ignition/modules/insurance.js
+```
+copy the generated contract address into config.js
+
+### 1. Hardhat Scripts (Backend Interaction)
+You can interact with the contract by running individual scripts such as:
+
+```bash
+npx hardhat run scripts/createPolicy.js --network sepolia
+npx hardhat console --network sepolia
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+### 2. Frontend Interaction (Recommended)
+A React-based frontend is included for easier interaction.
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+Start the frontend with:
+```bash
+npm run dev
 ```
+This will:
+* Launch the app in your browser
+* Allow you to connect your MetaMask wallet
+* Interact with the deployed DAO contract

@@ -10,7 +10,8 @@ import {
     claimPayout,
     policyDetails,
     getBalance,
-    checkAccounts
+    checkAccounts,
+    friendlyError,
 } from "./contract/insurance.js";
 
 export default function App() {
@@ -22,7 +23,7 @@ export default function App() {
             const address = await connectWallet();
             setWallet(address);
         } catch (err) {
-            alert(err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -38,7 +39,7 @@ export default function App() {
             const hash = await fundContract(amount);
             alert("Contract funded!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -53,7 +54,7 @@ export default function App() {
             const hash = await createPolicy(holder, premium, coverage);
             alert("Policy created!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -64,7 +65,7 @@ export default function App() {
             const hash = await approveClaim(Number(id));
             alert("Claim approved!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -80,7 +81,7 @@ export default function App() {
             const hash = await payPremium(Number(id), amount);
             alert("Premium paid!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -91,7 +92,7 @@ export default function App() {
             const hash = await submitClaim(Number(id));
             alert("Claim submitted!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -102,7 +103,7 @@ export default function App() {
             const hash = await claimPayout(Number(id));
             alert("Payout claimed!\n" + hash);
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -117,7 +118,7 @@ export default function App() {
             const policy = await policyDetails(Number(id));
             alert(JSON.stringify(policy, null, 2));
         } catch (err) {
-            alert(err.reason || err.message);
+            alert(friendlyError(err));
         }
     };
 
@@ -126,25 +127,22 @@ export default function App() {
             const balance = await getBalance();
             alert("Contract balance: " + balance + " ETH");
         } catch (err) {
-            alert(err.message);
+            alert(friendlyError(err));
         }
     };
 
     const handleCheckAccounts = async () => {
-
-    try {
-
-    const result = await checkAccounts();
-
-    alert(
-        `Wallet: ${result.wallet}
-        Insurer:${result.insurer}`
-    );
-
-    } catch(err) {
-        alert(err.message);
-    }
-};
+        try {
+            const result = await checkAccounts();
+            alert(
+                `Wallet: ${result.wallet}\n` +
+                `Insurer: ${result.insurer}\n` +
+                `You are insurer: ${result.isInsurer}`
+            );
+        } catch (err) {
+            alert(friendlyError(err));
+        }
+    };
     // -------------------------
     // UI
     // -------------------------
@@ -152,20 +150,20 @@ export default function App() {
     return (
         <div style={{ padding: 40 }}>
 
-            <h1>Insurance DApp</h1>
+            <h1>Insurance dApp</h1>
 
             <button onClick={connect}>
                 Connect Wallet
             </button>
-
+            <button onClick={handleCheckAccounts}>
+                Check Accounts
+            </button>
             <p>{wallet}</p>
 
             <hr />
 
             <h2>Insurer Actions</h2>
-            <button onClick={handleCheckAccounts}>
-                Check Accounts
-            </button>
+
             <button onClick={handleFund}>
                 Fund Contract
             </button>
