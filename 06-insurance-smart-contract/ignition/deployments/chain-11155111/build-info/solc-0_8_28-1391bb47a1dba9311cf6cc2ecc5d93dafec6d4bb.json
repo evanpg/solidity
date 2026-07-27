@@ -1,0 +1,49 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-1391bb47a1dba9311cf6cc2ecc5d93dafec6d4bb",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "compilerType": "solc",
+  "toolVersions": {
+    "hardhat": "3.11.1"
+  },
+  "userSourceNameMap": {
+    "contracts/insurance.sol": "project/contracts/insurance.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/insurance.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.20;\r\n\r\ncontract Insurance {\r\n    address public insurer;\r\n    uint public policyCounter;\r\n\r\n    struct Policy {\r\n        address policyHolder;\r\n        uint premium;\r\n        uint coverageAmount;\r\n        bool isClaimed;\r\n        bool isClaimApproved;\r\n        bool premiumPaid;\r\n        bool payoutDone;\r\n    }\r\n\r\n    mapping(uint => Policy) public policies;\r\n\r\n    // 🔔 Events (very important for tracking)\r\n    event PolicyCreated(uint policyId, address policyHolder, uint premium, uint coverageAmount);\r\n    event PremiumPaid(uint policyId, address policyHolder);\r\n    event ClaimSubmitted(uint policyId);\r\n    event ClaimApproved(uint policyId);\r\n    event PayoutDone(uint policyId, uint amount);\r\n    event FundsDeposited(address from, uint amount);\r\n\r\n    constructor() {\r\n        insurer = msg.sender;\r\n    }\r\n\r\n    // 🔒 Modifiers\r\n    modifier onlyInsurer() {\r\n        require(msg.sender == insurer, \"Only insurer allowed\");\r\n        _;\r\n    }\r\n\r\n    modifier validPolicy(uint _policyId) {\r\n        require(_policyId > 0 && _policyId <= policyCounter, \"Invalid policy ID\");\r\n        _;\r\n    }\r\n\r\n    // 🏦 Allow insurer to fund contract\r\n    function fundContract() external payable onlyInsurer {\r\n        require(msg.value > 0, \"Must send ETH\");\r\n        emit FundsDeposited(msg.sender, msg.value);\r\n    }\r\n\r\n    function createPolicy(address _policyHolder, uint _premium, uint _coverageAmount) public onlyInsurer {\r\n        require(_policyHolder != address(0), \"Invalid address\");\r\n        require(_premium > 0, \"Premium must be > 0\");\r\n        require(_coverageAmount > 0, \"Coverage must be > 0\");\r\n\r\n        policyCounter++;\r\n\r\n        policies[policyCounter] = Policy(\r\n            _policyHolder,\r\n            _premium,\r\n            _coverageAmount,\r\n            false,\r\n            false,\r\n            false,\r\n            false\r\n        );\r\n\r\n        emit PolicyCreated(policyCounter, _policyHolder, _premium, _coverageAmount);\r\n    }\r\n\r\n    function payPremium(uint _policyId) public payable validPolicy(_policyId) {\r\n        Policy storage policy = policies[_policyId];\r\n\r\n        require(msg.sender == policy.policyHolder, \"Only policy holder\");\r\n        require(!policy.premiumPaid, \"Premium already paid\");\r\n        require(msg.value == policy.premium, \"Incorrect premium\");\r\n\r\n        policy.premiumPaid = true;\r\n\r\n        emit PremiumPaid(_policyId, msg.sender);\r\n    }\r\n\r\n    function submitClaim(uint _policyId) public validPolicy(_policyId) {\r\n        Policy storage policy = policies[_policyId];\r\n\r\n        require(msg.sender == policy.policyHolder, \"Only policy holder\");\r\n        require(policy.premiumPaid, \"Premium not paid\");\r\n        require(!policy.isClaimed, \"Already claimed\");\r\n\r\n        policy.isClaimed = true;\r\n\r\n        emit ClaimSubmitted(_policyId);\r\n    }\r\n\r\n    function approveClaim(uint _policyId) public onlyInsurer validPolicy(_policyId) {\r\n        Policy storage policy = policies[_policyId];\r\n\r\n        require(policy.isClaimed, \"No claim submitted\");\r\n        require(!policy.isClaimApproved, \"Already approved\");\r\n\r\n        policy.isClaimApproved = true;\r\n\r\n        emit ClaimApproved(_policyId);\r\n    }\r\n\r\n    function claimPayout(uint _policyId) public validPolicy(_policyId) {\r\n        Policy storage policy = policies[_policyId];\r\n\r\n        require(msg.sender == policy.policyHolder, \"Only policy holder\");\r\n        require(policy.isClaimApproved, \"Claim not approved\");\r\n        require(!policy.payoutDone, \"Already paid\");\r\n\r\n        uint amount = policy.coverageAmount;\r\n\r\n        require(address(this).balance >= amount, \"Insufficient contract funds\");\r\n\r\n        // Effects before interaction (reentrancy-safe pattern)\r\n        policy.payoutDone = true;\r\n\r\n        (bool success, ) = payable(policy.policyHolder).call{value: amount}(\"\");\r\n        require(success, \"Transfer failed\");\r\n\r\n        emit PayoutDone(_policyId, amount);\r\n    }\r\n\r\n    function policyDetails(uint _policyId)\r\n        public\r\n        view\r\n        validPolicy(_policyId)\r\n        returns (Policy memory)\r\n    {\r\n        return policies[_policyId];\r\n    }\r\n\r\n    // 📊 Check contract balance\r\n    function getContractBalance() public view returns (uint) {\r\n        return address(this).balance;\r\n    }\r\n\r\n}\r\n"
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-// describe("SimpleDAO", function(){
+// describe("Insurance", function(){
 //     let dao, owner, member1, nonMember, member2;
 
 //     this.beforeEach(async function(){

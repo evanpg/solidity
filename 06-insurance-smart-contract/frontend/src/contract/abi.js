@@ -1,5 +1,9 @@
 export const INSURANCE_ABI = [
 
+    
+    // Ownership / insurer
+    "function insurer() view returns(address)",
+
     // Funding
     "function fundContract() payable",
 
@@ -18,6 +22,6 @@ export const INSURANCE_ABI = [
     "function policyCounter() view returns (uint256)",
     "function getContractBalance() view returns (uint256)",
 
-    // Optional direct mapping access
+    // Mapping getter
     "function policies(uint256) view returns (address,uint256,uint256,bool,bool,bool,bool)"
 ];

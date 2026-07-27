@@ -9,8 +9,9 @@ import {
     approveClaim,
     claimPayout,
     policyDetails,
-    getBalance
-} from "./contract/insurance";
+    getBalance,
+    checkAccounts
+} from "./contract/insurance.js";
 
 export default function App() {
 
@@ -129,6 +130,21 @@ export default function App() {
         }
     };
 
+    const handleCheckAccounts = async () => {
+
+    try {
+
+    const result = await checkAccounts();
+
+    alert(
+        `Wallet: ${result.wallet}
+        Insurer:${result.insurer}`
+    );
+
+    } catch(err) {
+        alert(err.message);
+    }
+};
     // -------------------------
     // UI
     // -------------------------
@@ -147,7 +163,9 @@ export default function App() {
             <hr />
 
             <h2>Insurer Actions</h2>
-
+            <button onClick={handleCheckAccounts}>
+                Check Accounts
+            </button>
             <button onClick={handleFund}>
                 Fund Contract
             </button>

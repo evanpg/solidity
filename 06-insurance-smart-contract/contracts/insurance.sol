@@ -1,3 +1,4 @@
+// contracts/
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -121,12 +122,13 @@ contract Insurance {
         emit PayoutDone(_policyId, amount);
     }
 
-    function policyDetails(uint _policyId)
-        public
-        view
-        validPolicy(_policyId)
-        returns (Policy memory)
-    {
+    
+    // -------------------------
+    // VIEW HELPERS
+    // -------------------------
+
+    function policyDetails(uint _policyId) public view validPolicy(_policyId) 
+    returns (Policy memory) {
         return policies[_policyId];
     }
 

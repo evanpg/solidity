@@ -1,12 +1,12 @@
-const {ethers } = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
-  // compile contract
-  await hre.run('compile');
+  // compile contract... V3 has this built into getContractFactory
+  // await hre.run('compile');
 
   // get factory
-  const Insurance = await ethers.getContractFactory("Insurance");
-  const Insurance =  await Insurance.deploy();
+  const InsuranceFactory = await ethers.getContractFactory("Insurance");
+  const Insurance =  await InsuranceFactory.deploy();
   await Insurance.waitForDeployment();
 
   console.log("Insurance deployed to:", Insurance.target);

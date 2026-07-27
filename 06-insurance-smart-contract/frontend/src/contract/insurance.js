@@ -22,11 +22,33 @@ export async function connectWallet() {
 
 // Fund contract
 export async function fundContract(amountInEth) {
-    const { contract } = await getContract();
-    const tx = await contract.fundContract({
+
+    const { signer, contract } = await getContract();
+
+    console.log("Contract:", contract.target);
+
+    console.log(
+        "Connected wallet:",
+        await signer.getAddress()
+    );
+
+    console.log(
+        "Insurer:",
+        await contract.insurer()
+    );
+
+    console.log(
+        "Amount:",
+        amountInEth
+    );
+
+    const tx = await signer.sendTransaction({
+        to: contract.target,
         value: ethers.parseEther(amountInEth.toString())
     });
+
     await tx.wait();
+
     return tx.hash;
 }
 
@@ -96,4 +118,29 @@ export async function getBalance() {
     const { provider, contract } = await getContract();
     const balance = await provider.getBalance(contract.target);
     return ethers.formatEther(balance);
+}
+
+export async function getInsurer() {
+
+    const { contract } = await getContract();
+
+    return await contract.insurer();
+
+}
+
+
+export async function checkAccounts() {
+
+    const { signer, contract } = await getContract();
+
+    const wallet = await signer.getAddress();
+    const insurer = await contract.insurer();
+
+    console.log("Connected wallet:", wallet);
+    console.log("Contract insurer:", insurer);
+
+    return {
+        wallet,
+        insurer
+    };
 }
