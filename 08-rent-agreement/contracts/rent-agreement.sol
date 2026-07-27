@@ -74,13 +74,13 @@ contract RentAgreement {
         require(block.timestamp < startTimestamp + (durationMonths * 30 days), "Rent Agreement expired");
         require(block.timestamp >= rentPaidUntil, "Rent already paid for current period");        
         //require(block.timestamp < startTimestamp + 30 days, "Too early to pay next rent");
-        uint currentMonth = (block.timestamp - startTimestamp)/30 days;
+        uint currentMonth = (block.timestamp - startTimestamp) / 30 days;
         uint paymentDueDate = startTimestamp + (currentMonth * 30 days) + (gracePeriod * 1 days);
         uint penalty = 0;
 
     if(block.timestamp > paymentDueDate) {
-        uint monthsLate = (block.timestamp - paymentDueDate) / 30 days;
-        penalty = (rentAmount * penaltyRate * (monthsLate + 1)) / 100;
+        uint monthsLate = ((block.timestamp - paymentDueDate) + 1) / 30 days;
+        penalty = (rentAmount * penaltyRate * (monthsLate)) / 100;
         if (penalty > (rentAmount * maxPenaltyRate) / 100) {
             penalty = (rentAmount * maxPenaltyRate) / 100;
             }
@@ -91,14 +91,14 @@ contract RentAgreement {
         emit RentPaid(msg.sender, msg.value, rentPaidUntil, penalty);
     }
 
-    function withdrawRent() external onlyLandlord notTerminated noReentrant{
+    function withdrawRent() external onlyLandlord notTerminated noReentrant {
         //require(!terminationRequested, "Termination requested, contract is pending closure (2)");
         uint amount = address(this).balance;
         require(amount > 0, "No funds available");
         (bool sent, ) = landlord.call{value: amount}("");
         require(sent, "Failed to send ETH");
     }
-    
+
     function requestTermination() external notTerminated {
         require(msg.sender == tenant || msg.sender == landlord, "only tenant or landlord can terminate");
         require(!terminationRequested, "Termination already requested."); //this freezes everything until termination is resolved, but also allows termination flag to be rewritten
@@ -110,16 +110,23 @@ contract RentAgreement {
     function approveTermination() external notTerminationRequester notTerminated noReentrant {
         require(terminationRequested, "No termination request to approve");
         require(msg.sender == tenant || msg.sender == landlord, "Only tenant or landlord can approve");
-        transferBalanceToLandlord(); //if fails, no
+        transferBalanceOnTermination(); //if fails, no
         isTerminated = true;
         emit AgreementTerminated(msg.sender);
-
     }
 
-    function transferBalanceToLandlord() private {
+
+    function transferBalanceOnTermination() private {
         uint balance = address(this).balance;
-        require(balance > 0, "No balance");
-        (bool sent, ) = landlord.call{value: balance}("");
-        require(sent, "failed to send ETH");
+
+        uint landlordShare = balance / 2;
+        uint tenantRefund = balance - landlordShare;
+
+        (bool landlordSent, ) = landlord.call{value: landlordShare}("");
+        require(landlordSent, "Landlord transfer failed");
+
+        (bool tenantSent, ) = payable(tenant).call{value: tenantRefund}("");
+        require(tenantSent, "Tenant refund failed");
     }
+ 
 }

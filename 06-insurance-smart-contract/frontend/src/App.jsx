@@ -1,15 +1,16 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 import {
     connectWallet,
-    addMember,
-    deposit,
-    createProposal,
-    vote,
-    executeProposal,
-    getProposal
-} from "./contract/dao";
+    fundContract,
+    createPolicy,
+    payPremium,
+    submitClaim,
+    approveClaim,
+    claimPayout,
+    policyDetails,
+    getBalance
+} from "./contract/insurance";
 
 export default function App() {
 
@@ -24,124 +25,118 @@ export default function App() {
         }
     };
 
-    const handleAddMember = async () => {
+    // -------------------------
+    // INSURER ACTIONS
+    // -------------------------
 
-        const address = prompt("Member address");
-
-        if (!address) return;
-
-        try {
-            const hash = await addMember(address);
-
-            alert("Member added!\n" + hash);
-
-        } catch (err) {
-            alert(err.reason || err.message);
-        }
-    };
-
-    const handleDeposit = async () => {
-
-        const amount = prompt("Amount (MATIC)");
-
+    const handleFund = async () => {
+        const amount = prompt("Amount to fund contract (ETH)");
         if (!amount) return;
 
         try {
-
-            const hash = await deposit(amount);
-
-            alert(hash);
-
+            const hash = await fundContract(amount);
+            alert("Contract funded!\n" + hash);
         } catch (err) {
-
             alert(err.reason || err.message);
-
         }
     };
 
-    const handleCreateProposal = async () => {
+    const handleCreatePolicy = async () => {
+        const holder = prompt("Policy holder address");
+        const premium = prompt("Premium (ETH)");
+        const coverage = prompt("Coverage amount (ETH)");
 
-        const description = prompt("Description");
-
-        const recipient = prompt("Recipient");
-
-        const amount = prompt("Amount (MATIC)");
+        if (!holder || !premium || !coverage) return;
 
         try {
-
-            const hash = await createProposal(
-                description,
-                recipient,
-                amount
-            );
-
-            alert(hash);
-
+            const hash = await createPolicy(holder, premium, coverage);
+            alert("Policy created!\n" + hash);
         } catch (err) {
-
             alert(err.reason || err.message);
-
         }
     };
 
-    const handleVote = async () => {
-
-        const id = prompt("Proposal ID");
+    const handleApproveClaim = async () => {
+        const id = prompt("Policy ID");
 
         try {
-
-            const hash = await vote(Number(id));
-
-            alert(hash);
-
+            const hash = await approveClaim(Number(id));
+            alert("Claim approved!\n" + hash);
         } catch (err) {
-
             alert(err.reason || err.message);
-
         }
     };
 
-    const handleExecute = async () => {
+    // -------------------------
+    // USER ACTIONS
+    // -------------------------
 
-        const id = prompt("Proposal ID");
+    const handlePayPremium = async () => {
+        const id = prompt("Policy ID");
+        const amount = prompt("Premium amount (ETH)");
 
         try {
-
-            const hash = await executeProposal(Number(id));
-
-            alert(hash);
-
+            const hash = await payPremium(Number(id), amount);
+            alert("Premium paid!\n" + hash);
         } catch (err) {
-
             alert(err.reason || err.message);
-
         }
     };
 
-    const handleGetProposal = async () => {
-
-        const id = prompt("Proposal ID");
+    const handleSubmitClaim = async () => {
+        const id = prompt("Policy ID");
 
         try {
-
-            const proposal = await getProposal(Number(id));
-
-            console.log(proposal);
-
-            alert(JSON.stringify(proposal, null, 2));
-
+            const hash = await submitClaim(Number(id));
+            alert("Claim submitted!\n" + hash);
         } catch (err) {
-
             alert(err.reason || err.message);
-
         }
     };
+
+    const handleClaimPayout = async () => {
+        const id = prompt("Policy ID");
+
+        try {
+            const hash = await claimPayout(Number(id));
+            alert("Payout claimed!\n" + hash);
+        } catch (err) {
+            alert(err.reason || err.message);
+        }
+    };
+
+    // -------------------------
+    // VIEW FUNCTIONS
+    // -------------------------
+
+    const handleGetPolicy = async () => {
+        const id = prompt("Policy ID");
+
+        try {
+            const policy = await policyDetails(Number(id));
+            alert(JSON.stringify(policy, null, 2));
+        } catch (err) {
+            alert(err.reason || err.message);
+        }
+    };
+
+    const handleGetBalance = async () => {
+        try {
+            const balance = await getBalance();
+            alert("Contract balance: " + balance + " ETH");
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    // -------------------------
+    // UI
+    // -------------------------
 
     return (
-
         <div style={{ padding: 40 }}>
 
-            <h1>Simple DAO</h1>
+            <h1>Insurance DApp</h1>
 
             <button onClick={connect}>
                 Connect Wallet
@@ -151,28 +146,46 @@ export default function App() {
 
             <hr />
 
-            <button onClick={handleAddMember}>
-                Add Member
+            <h2>Insurer Actions</h2>
+
+            <button onClick={handleFund}>
+                Fund Contract
             </button>
 
-            <button onClick={handleDeposit}>
-                Deposit
+            <button onClick={handleCreatePolicy}>
+                Create Policy
             </button>
 
-            <button onClick={handleCreateProposal}>
-                Create Proposal
+            <button onClick={handleApproveClaim}>
+                Approve Claim
             </button>
 
-            <button onClick={handleVote}>
-                Vote
+            <hr />
+
+            <h2>User Actions</h2>
+
+            <button onClick={handlePayPremium}>
+                Pay Premium
             </button>
 
-            <button onClick={handleExecute}>
-                Execute Proposal
+            <button onClick={handleSubmitClaim}>
+                Submit Claim
             </button>
 
-            <button onClick={handleGetProposal}>
-                View Proposal
+            <button onClick={handleClaimPayout}>
+                Claim Payout
+            </button>
+
+            <hr />
+
+            <h2>View</h2>
+
+            <button onClick={handleGetPolicy}>
+                View Policy
+            </button>
+
+            <button onClick={handleGetBalance}>
+                Contract Balance
             </button>
 
         </div>

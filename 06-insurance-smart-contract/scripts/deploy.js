@@ -5,11 +5,11 @@ async function main() {
   await hre.run('compile');
 
   // get factory
-  const SimpleDAO = await ethers.getContractFactory("SimpleDAO");
-  const simpleDAO =  await SimpleDAO.deploy();
-  await simpleDAO.waitForDeployment();
+  const Insurance = await ethers.getContractFactory("Insurance");
+  const Insurance =  await Insurance.deploy();
+  await Insurance.waitForDeployment();
 
-  console.log("SimpleDAO deployed to:", simpleDAO.target);
+  console.log("Insurance deployed to:", Insurance.target);
 
 }
 

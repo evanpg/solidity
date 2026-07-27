@@ -1,0 +1,8 @@
+## 04-crowdfunding
+This project demonstrates the complexity that can be achieved by smart contracts when designing structures similar to a business or government. It defines roles to addresses, gives the ability to create and fund proposals, sets targets and deadlines, and allows for voting capacity. The built-in logic then ultimately determines if a proposal is granted the funding received, or if a refund is made.
+1. Contract is deployed by a Manager who can solely access the *createRequest* function. Requests are Proposals that can be funded and voted to pass, sending locked tokens to a predetermined address. i.e. "Business StartUp A". 
+2. If someone wants to fund the Proposal they then send the *minContribution* by calling the *makePayment* function of the contract.
+3. After contribution, they are then able to call the *voteRequest* to register their vote.
+4. Once the raised amount is greater than the target and the Majority vote is in, the Manager is able to call the *makePayment* function, paying the Startup's recipient address.
+5. If the crowdfunding round goes on past its deadline, and does not receive enough funding or have majority votes, a contributor can request a refund by calling the contract's *refund()* function.
+NOTE: This contract can handle multiple proposals at once, and holds an array to keep track of them. Getter functions like *getContractBalance()* can be useful for a potential contributor to examine contract state.
